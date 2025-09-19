@@ -1,5 +1,7 @@
 # MindForge
 
+<img width="1024" height="1024" alt="Logo" src="https://github.com/user-attachments/assets/bf0f977c-4f21-428d-bef3-6daeddc227b0" />
+
 A revolutionary mobile micro-learning application leveraging cognitive science principles to transform knowledge acquisition and retention through spaced repetition and active recall methodologies.
 
 ## Table of Contents
@@ -20,7 +22,7 @@ A revolutionary mobile micro-learning application leveraging cognitive science p
 
 ## Executive Summary
 
-MindForge addresses the fundamental challenge of knowledge retention in modern education and professional development. Traditional learning methods result in rapid knowledge decay, with studies showing that learners forget up to 90% of information within one week. MindForge implements scientifically-proven cognitive techniques to ensure knowledge transitions from short-term to long-term memory through systematic, optimized review cycles.
+MindForge addresses the fundamental challenge of knowledge retention in modern education and professional development. Traditional learning methods result in rapid knowledge decay, with studies showing that learners forget up to 90% of information within one week. MindForge implements scientifically-proven cognitive techniques to ensure knowledge transitions from short-term to long-term memory through systematic, optimised review cycles.
 
 ### Key Differentiators
 
@@ -28,7 +30,7 @@ MindForge addresses the fundamental challenge of knowledge retention in modern e
 - **Content Agnosticism**: Automated processing of any knowledge domain from multiple source formats
 - **Micro-Learning Architecture**: 5-minute optimized sessions designed for modern attention spans
 - **Offline-First Design**: Full functionality without connectivity, with intelligent background synchronization
-- **Enterprise-Ready**: Scalable architecture supporting individual to organizational deployments
+- **Enterprise-Ready**: Scalable architecture supporting individual to organisational deployments
 
 ## Project Vision
 
@@ -155,7 +157,7 @@ MindForge automates the transformation of any content source into optimized lear
 **Analytics & Tracking**
 - Learning velocity metrics
 - Retention rate analysis
-- Knowledge graph visualization
+- Knowledge graph visualisation
 - Performance predictions
 - Export capabilities
 
@@ -427,7 +429,7 @@ kubectl apply -f infrastructure/kubernetes/
 
 Copyright (C) 2025 MindForge. All rights reserved.
 
-This software is proprietary and confidential. Unauthorized copying, modification, distribution, or use of this software, via any medium, is strictly prohibited without explicit written permission from MindForge maintainers 
+This software is proprietary and confidential. Unauthorised copying, modification, distribution, or use of this software, via any medium, is strictly prohibited without explicit written permission from MindForge maintainers 
 
 ## Contact
 
@@ -445,7 +447,6 @@ Email: SzyYP@proton.me
 
 For technical support or inquiries:
 - Email: SzyYP@proton.me
-- Documentation: https://docs.mindforge.app
 - Issue Tracker: GitHub Issues
 
 Built with dedication to revolutionising knowledge retention.  
