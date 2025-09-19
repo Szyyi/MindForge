@@ -1,6 +1,4 @@
-// ============================================
 // src/navigation/RootNavigator.tsx
-// ============================================
 import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';

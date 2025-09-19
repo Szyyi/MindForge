@@ -1,6 +1,8 @@
-// App.tsx - Complete MindForge App Entry Point
+// ============================================
+// Updated App.tsx - Integrating initialization with your existing code
+// ============================================
 import React, { useEffect, useState } from 'react';
-import { StatusBar, View, ActivityIndicator, StyleSheet } from 'react-native';
+import { StatusBar, View, ActivityIndicator, StyleSheet, AppState, AppStateStatus } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
@@ -11,6 +13,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 // Store imports
 import { store, persistor } from './src/store';
+import { initializeApp, cleanupApp } from './src/store/initializeApp';
+import syncService from './src/services/api/sync';
 
 // Navigation imports
 import RootNavigator from './src/navigation/RootNavigator';
@@ -25,25 +29,24 @@ export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
+    let appStateSubscription: any;
+
     async function prepare() {
       try {
-        // Load fonts (uncomment when you add Montserrat fonts to assets/fonts/)
+        // Load fonts
         await Font.loadAsync({
-          // Montserrat fonts for premium look
-          // 'Montserrat-Thin': require('./assets/fonts/Montserrat-Thin.ttf'),
-          // 'Montserrat-Light': require('./assets/fonts/Montserrat-Light.ttf'),
-           'Montserrat-Regular': require('./assets/fonts/Montserrat-Regular.ttf'),
-           'Montserrat-Medium': require('./assets/fonts/Montserrat-Medium.ttf'),
-           'Montserrat-SemiBold': require('./assets/fonts/Montserrat-SemiBold.ttf'),
-           'Montserrat-Bold': require('./assets/fonts/Montserrat-Bold.ttf'),
-          // 'Montserrat-Black': require('./assets/fonts/Montserrat-Black.ttf'),
-          
-          // Icon fonts (if using Ionicons)
+          'Montserrat-Regular': require('./assets/fonts/Montserrat-Regular.ttf'),
+          'Montserrat-Medium': require('./assets/fonts/Montserrat-Medium.ttf'),
+          'Montserrat-SemiBold': require('./assets/fonts/Montserrat-SemiBold.ttf'),
+          'Montserrat-Bold': require('./assets/fonts/Montserrat-Bold.ttf'),
           'Ionicons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
         });
 
-        // Simulate any other loading tasks
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Premium feel delay
+        // Initialize app services and load data
+        await initializeApp();
+
+        // Simulate any other loading tasks for premium feel
+        await new Promise(resolve => setTimeout(resolve, 500));
         
       } catch (e) {
         console.warn('Error loading resources:', e);
@@ -56,6 +59,25 @@ export default function App() {
     }
 
     prepare();
+
+    // Handle app state changes
+    appStateSubscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'background') {
+        // App going to background - save any pending data
+        cleanupApp().catch(console.error);
+      } else if (nextAppState === 'active' && appIsReady) {
+        // App coming to foreground - check for updates
+        syncService.syncData().catch(console.error);
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (appStateSubscription) {
+        appStateSubscription.remove();
+      }
+      cleanupApp().catch(console.error);
+    };
   }, []);
 
   // Loading screen while resources load
@@ -106,19 +128,19 @@ export default function App() {
               },
               fonts: {
                 regular: {
-                  fontFamily: 'System',
+                  fontFamily: 'Montserrat-Regular',
                   fontWeight: '400',
                 },
                 medium: {
-                  fontFamily: 'System',
+                  fontFamily: 'Montserrat-Medium',
                   fontWeight: '500',
                 },
                 bold: {
-                  fontFamily: 'System',
+                  fontFamily: 'Montserrat-Bold',
                   fontWeight: '700',
                 },
                 heavy: {
-                  fontFamily: 'System',
+                  fontFamily: 'Montserrat-Bold',
                   fontWeight: '900',
                 },
               },

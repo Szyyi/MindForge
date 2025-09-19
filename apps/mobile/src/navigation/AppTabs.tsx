@@ -1,6 +1,4 @@
-// ============================================
 // src/navigation/AppTabs.tsx
-// ============================================
 import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -14,7 +12,9 @@ import LibraryScreen from '../screens/library/LibraryScreen';
 import StatsScreen from '../screens/stats/StatsScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 
-import colors from '../theme';
+// Fixed imports - use direct imports from theme files
+import { colors } from '../theme/colors';
+import { spacing } from '../theme/spacing';
 
 const Tab = createBottomTabNavigator();
 
@@ -48,8 +48,8 @@ export default function AppTabs() {
             <View style={styles.tabBarGradient} />
           </BlurView>
         ),
-        tabBarActiveTintColor: colors.colors.gradients.primary[0],
-        tabBarInactiveTintColor: colors.colors.background.tertiary,
+        tabBarActiveTintColor: colors.gradients.primary[0],
+        tabBarInactiveTintColor: colors.text.muted,
         tabBarIcon: ({ focused, color, size }) => {
           const iconName = getTabIcon(route.name, focused);
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -60,9 +60,7 @@ export default function AppTabs() {
             <View
               {...otherProps}
               onTouchEnd={() => {
-                if (Haptics) {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 if (onPress) {
                   onPress();
                 }
@@ -93,8 +91,8 @@ const styles = StyleSheet.create({
   },
   tabBarGradient: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.colors.background.elevated,
+    backgroundColor: colors.glass.medium,
     borderTopWidth: 1,
-    borderTopColor: colors.colors.background.tertiary,
+    borderTopColor: colors.glass.border,
   },
 });
