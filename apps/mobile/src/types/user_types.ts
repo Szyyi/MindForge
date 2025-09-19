@@ -3,6 +3,7 @@
 // src/types/user.types.ts
 // ============================================
 export interface User {
+  emailVerified: any;
   id: string;
   email: string;
   username: string;

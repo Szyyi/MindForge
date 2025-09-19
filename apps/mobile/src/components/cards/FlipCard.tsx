@@ -8,13 +8,10 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing } from '../../theme/spacing';
-import { shadows } from '../../theme/shadows';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - spacing.lg * 2;
@@ -24,35 +21,46 @@ interface FlipCardProps {
   question: string;
   answer: string;
   category?: string;
-  difficulty?: 'easy' | 'medium' | 'hard';
+  cardNumber?: number;
+  totalCards?: number;
   onFlip?: (isFlipped: boolean) => void;
 }
 
 export const FlipCard: React.FC<FlipCardProps> = ({
   question,
   answer,
-  category = 'General',
-  difficulty = 'medium',
+  category = 'GENERAL',
+  cardNumber,
+  totalCards,
   onFlip,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
-
-  const difficultyColors = {
-    easy: colors.status.success,
-    medium: colors.gradients.primary[0],
-    hard: colors.status.warning,
-  };
+  const scaleAnimation = useRef(new Animated.Value(1)).current;
 
   const flipCard = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
+    // Small scale animation for feedback
+    Animated.sequence([
+      Animated.timing(scaleAnimation, {
+        toValue: 0.98,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnimation, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
+    // Flip animation
     const newValue = isFlipped ? 0 : 1;
     
-    Animated.spring(flipAnimation, {
+    Animated.timing(flipAnimation, {
       toValue: newValue,
-      friction: 8,
-      tension: 10,
+      duration: 400,
       useNativeDriver: true,
     }).start();
 
@@ -70,97 +78,88 @@ export const FlipCard: React.FC<FlipCardProps> = ({
     outputRange: ['180deg', '360deg'],
   });
 
-  const frontAnimatedStyle = {
-    transform: [{ rotateY: frontInterpolate }],
-  };
+  const frontOpacity = flipAnimation.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 0, 0],
+  });
 
-  const backAnimatedStyle = {
-    transform: [{ rotateY: backInterpolate }],
-  };
+  const backOpacity = flipAnimation.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0, 1],
+  });
 
   return (
     <TouchableWithoutFeedback onPress={flipCard}>
-      <View style={styles.container}>
-        {/* Front of Card */}
-        <Animated.View style={[styles.cardContainer, frontAnimatedStyle]}>
-          <View style={[styles.card, shadows.large]}>
-            <BlurView intensity={30} style={styles.blurView} tint="dark">
-              <LinearGradient
-                colors={[colors.glass.medium, colors.glass.light]}
-                style={styles.gradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
-              
-              {/* Card Header */}
-              <View style={styles.cardHeader}>
-                <View style={styles.categoryBadge}>
-                  <LinearGradient
-                    colors={colors.gradients.primary as any}
-                    style={styles.categoryGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  >
-                    <Text style={styles.categoryText}>{category}</Text>
-                  </LinearGradient>
-                </View>
-                
-                <View style={[styles.difficultyIndicator, { backgroundColor: difficultyColors[difficulty] }]} />
-              </View>
+      <Animated.View style={[
+        styles.container,
+        { transform: [{ scale: scaleAnimation }] }
+      ]}>
+        {/* Front of Card - Question */}
+        <Animated.View 
+          style={[
+            styles.card,
+            {
+              transform: [{ rotateY: frontInterpolate }],
+              opacity: frontOpacity,
+            },
+          ]}
+        >
+          {/* Card Header */}
+          <View style={styles.cardHeader}>
+            <Text style={styles.categoryText}>{category.toUpperCase()}</Text>
+            {cardNumber && totalCards && (
+              <Text style={styles.cardCounter}>{cardNumber}/{totalCards}</Text>
+            )}
+          </View>
 
-              {/* Question Content */}
-              <View style={styles.contentContainer}>
-                <Text style={styles.label}>QUESTION</Text>
-                <Text style={styles.questionText}>{question}</Text>
-              </View>
+          {/* Question Content */}
+          <View style={styles.contentContainer}>
+            <View style={styles.questionMark}>
+              <Text style={styles.questionMarkText}>?</Text>
+            </View>
+            <Text style={styles.questionText}>{question}</Text>
+          </View>
 
-              {/* Tap Hint */}
-              <View style={styles.hintContainer}>
-                <Text style={styles.hintText}>Tap to reveal answer</Text>
-              </View>
-            </BlurView>
+          {/* Tap Hint */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>TAP TO REVEAL</Text>
           </View>
         </Animated.View>
 
-        {/* Back of Card */}
-        <Animated.View style={[styles.cardContainer, styles.cardBack, backAnimatedStyle]}>
-          <View style={[styles.card, shadows.large]}>
-            <BlurView intensity={30} style={styles.blurView} tint="dark">
-              <LinearGradient
-                colors={[colors.gradients.secondary[0], colors.glass.medium] as any}
-                style={styles.gradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
+        {/* Back of Card - Answer */}
+        <Animated.View 
+          style={[
+            styles.card,
+            styles.cardBack,
+            {
+              transform: [{ rotateY: backInterpolate }],
+              opacity: backOpacity,
+            },
+          ]}
+        >
+          {/* Card Header */}
+          <View style={styles.cardHeader}>
+            <Text style={styles.answerLabel}>ANSWER</Text>
+            {cardNumber && totalCards && (
+              <Text style={styles.cardCounter}>{cardNumber}/{totalCards}</Text>
+            )}
+          </View>
 
-              {/* Card Header */}
-              <View style={styles.cardHeader}>
-                <View style={styles.categoryBadge}>
-                  <LinearGradient
-                    colors={colors.gradients.accent as any}
-                    style={styles.categoryGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  >
-                    <Text style={styles.categoryText}>{category}</Text>
-                  </LinearGradient>
-                </View>
-              </View>
+          {/* Answer Content */}
+          <View style={styles.contentContainer}>
+            <Text style={styles.answerText}>{answer}</Text>
+          </View>
 
-              {/* Answer Content */}
-              <View style={styles.contentContainer}>
-                <Text style={styles.label}>ANSWER</Text>
-                <Text style={styles.answerText}>{answer}</Text>
-              </View>
-
-              {/* Tap Hint */}
-              <View style={styles.hintContainer}>
-                <Text style={styles.hintText}>Tap to see question</Text>
-              </View>
-            </BlurView>
+          {/* Footer */}
+          <View style={styles.footer}>
+            <View style={styles.footerDots}>
+              <View style={[styles.dot, styles.dotInactive]} />
+              <View style={[styles.dot, styles.dotActive]} />
+            </View>
+            <Text style={styles.footerText}>RATE YOUR RECALL</Text>
           </View>
         </Animated.View>
-      </View>
+      </Animated.View>
     </TouchableWithoutFeedback>
   );
 };
@@ -169,94 +168,105 @@ const styles = StyleSheet.create({
   container: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: 'relative',
   },
-  cardContainer: {
+  card: {
     position: 'absolute',
     width: '100%',
     height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: spacing.borderRadius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 102, 255, 0.1)',
+    padding: spacing.xl,
     backfaceVisibility: 'hidden',
+    justifyContent: 'space-between',
   },
   cardBack: {
-    position: 'absolute',
-    top: 0,
-  },
-  card: {
-    flex: 1,
-    borderRadius: 28,
-    overflow: 'hidden',
-    backgroundColor: colors.glass.light,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-  },
-  blurView: {
-    flex: 1,
-    padding: spacing.xl,
-  },
-  gradient: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.7,
+    backgroundColor: 'rgba(0, 102, 255, 0.02)',
+    borderColor: 'rgba(0, 102, 255, 0.2)',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  categoryBadge: {
-    borderRadius: spacing.borderRadius.small,
-    overflow: 'hidden',
-  },
-  categoryGradient: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
   },
   categoryText: {
-    color: colors.text.primary,
     fontSize: typography.fontSize.xs,
-    fontWeight: '700',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+    color: 'rgba(0, 212, 255, 0.7)',
+    fontWeight: '600',
+    letterSpacing: 2,
   },
-  difficultyIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  answerLabel: {
+    fontSize: typography.fontSize.xs,
+    color: 'rgba(0, 212, 255, 0.7)',
+    fontWeight: '600',
+    letterSpacing: 2,
+  },
+  cardCounter: {
+    fontSize: typography.fontSize.sm,
+    color: 'rgba(255, 255, 255, 0.3)',
   },
   contentContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: spacing.xl,
   },
-  label: {
-    color: colors.text.tertiary,
-    fontSize: typography.fontSize.xs,
-    fontWeight: '700',
-    letterSpacing: 2,
-    marginBottom: spacing.lg,
+  questionMark: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(0, 102, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 102, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+  questionMarkText: {
+    fontSize: 28,
+    color: '#0066FF',
+    fontWeight: '300',
   },
   questionText: {
-    color: colors.text.primary,
     fontSize: typography.fontSize.xxl,
-    fontWeight: '600',
+    fontWeight: '300',
+    color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: typography.fontSize.xxl * 1.4,
+    paddingHorizontal: spacing.md,
   },
   answerText: {
-    color: colors.text.primary,
     fontSize: typography.fontSize.xl,
-    fontWeight: '500',
+    fontWeight: '400',
+    color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: typography.fontSize.xl * 1.5,
+    paddingHorizontal: spacing.md,
   },
-  hintContainer: {
+  footer: {
     alignItems: 'center',
-    paddingTop: spacing.lg,
   },
-  hintText: {
-    color: colors.text.muted,
-    fontSize: typography.fontSize.sm,
-    fontStyle: 'italic',
+  footerText: {
+    fontSize: typography.fontSize.xs,
+    color: 'rgba(255, 255, 255, 0.3)',
+    letterSpacing: 2,
+  },
+  footerDots: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  dotActive: {
+    backgroundColor: '#0066FF',
+  },
+  dotInactive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
 });

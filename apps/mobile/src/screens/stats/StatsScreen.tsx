@@ -12,262 +12,238 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { GlassCard } from '../../components/common/GlassCard';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing } from '../../theme/spacing';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Mock data for charts
+// Mock data
 const weeklyData = [
-  { day: 'Mon', cards: 45, correct: 38 },
-  { day: 'Tue', cards: 52, correct: 48 },
-  { day: 'Wed', cards: 38, correct: 32 },
-  { day: 'Thu', cards: 60, correct: 55 },
-  { day: 'Fri', cards: 48, correct: 42 },
-  { day: 'Sat', cards: 35, correct: 30 },
-  { day: 'Sun', cards: 42, correct: 38 },
+  { day: 'M', cards: 45, accuracy: 84 },
+  { day: 'T', cards: 52, accuracy: 92 },
+  { day: 'W', cards: 38, accuracy: 84 },
+  { day: 'T', cards: 60, accuracy: 91 },
+  { day: 'F', cards: 48, accuracy: 87 },
+  { day: 'S', cards: 35, accuracy: 85 },
+  { day: 'S', cards: 42, accuracy: 90 },
 ];
 
-const categoryStats = [
-  { name: 'Technology', cards: 245, accuracy: 85, color: colors.gradients.primary },
-  { name: 'Languages', cards: 180, accuracy: 72, color: colors.gradients.secondary },
-  { name: 'Science', cards: 120, accuracy: 90, color: colors.gradients.accent },
-  { name: 'History', cards: 95, accuracy: 68, color: colors.gradients.success },
-  { name: 'Mathematics', cards: 60, accuracy: 75, color: colors.gradients.warning },
+const monthlyTrend = [
+  { week: 'W1', total: 280 },
+  { week: 'W2', total: 320 },
+  { week: 'W3', total: 295 },
+  { week: 'W4', total: 320 },
 ];
 
 export default function StatsScreen({ navigation }: any) {
-  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week');
-  const maxCards = Math.max(...weeklyData.map(d => d.cards));
+  const [timeRange, setTimeRange] = useState<'7D' | '30D' | '1Y'>('7D');
   
-  // Calculate overall stats
+  // Calculate stats
   const totalCards = weeklyData.reduce((sum, day) => sum + day.cards, 0);
-  const totalCorrect = weeklyData.reduce((sum, day) => sum + day.correct, 0);
-  const overallAccuracy = Math.round((totalCorrect / totalCards) * 100);
-  const averagePerDay = Math.round(totalCards / 7);
+  const avgAccuracy = Math.round(
+    weeklyData.reduce((sum, day) => sum + day.accuracy, 0) / weeklyData.length
+  );
+  const avgPerDay = Math.round(totalCards / 7);
+  const maxCards = Math.max(...weeklyData.map(d => d.cards));
+  const bestDay = weeklyData.find(d => d.cards === maxCards);
   
-  const handleTimeRangeChange = (range: 'week' | 'month' | 'year') => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setTimeRange(range);
-  };
-
   return (
-    <LinearGradient
-      colors={[colors.background.primary, colors.background.secondary]}
-      style={styles.container}
-    >
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#000000', '#0A0A0F']}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
       <SafeAreaView style={styles.safeArea}>
         <ScrollView 
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          bounces={false}
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Your Progress</Text>
-            <Text style={styles.subtitle}>Keep up the great work! 🚀</Text>
-          </View>
-
-          {/* Time Range Selector */}
-          <View style={styles.timeRangeContainer}>
-            {(['week', 'month', 'year'] as const).map((range) => (
-              <TouchableOpacity
-                key={range}
-                onPress={() => handleTimeRangeChange(range)}
-                style={styles.timeRangeButton}
-              >
-                <GlassCard
-                  style={{
-                    ...styles.timeRangeCard,
-                    ...(timeRange === range ? styles.timeRangeCardActive : {}),
+            <Text style={styles.title}>Statistics</Text>
+            <View style={styles.timeRangeContainer}>
+              {(['7D', '30D', '1Y'] as const).map((range) => (
+                <TouchableOpacity
+                  key={range}
+                  style={[
+                    styles.timeRangeButton,
+                    timeRange === range && styles.timeRangeButtonActive
+                  ]}
+                  onPress={() => {
+                    setTimeRange(range);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   }}
                 >
-                  {timeRange === range ? (
-                    <LinearGradient
-                      colors={colors.gradients.primary as any}
-                      style={styles.timeRangeGradient}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                    >
-                      <Text style={[styles.timeRangeText, styles.timeRangeTextActive]}>
-                        {range.charAt(0).toUpperCase() + range.slice(1)}
-                      </Text>
-                    </LinearGradient>
-                  ) : (
-                    <Text style={styles.timeRangeText}>
-                      {range.charAt(0).toUpperCase() + range.slice(1)}
-                    </Text>
-                  )}
-                </GlassCard>
-              </TouchableOpacity>
-            ))}
+                  <Text style={[
+                    styles.timeRangeText,
+                    timeRange === range && styles.timeRangeTextActive
+                  ]}>
+                    {range}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
-          {/* Key Metrics */}
-          <View style={styles.metricsGrid}>
-            <GlassCard style={styles.metricCard}>
-              <LinearGradient
-                colors={colors.gradients.primary as any}
-                style={styles.metricGradient}
-              >
-                <Ionicons name="trending-up" size={24} color={colors.text.primary} />
-                <Text style={styles.metricValue}>{totalCards}</Text>
-                <Text style={styles.metricLabel}>Cards Reviewed</Text>
-              </LinearGradient>
-            </GlassCard>
-
-            <GlassCard style={styles.metricCard}>
-              <LinearGradient
-                colors={colors.gradients.accent as any}
-                style={styles.metricGradient}
-              >
-                <Ionicons name="checkmark-circle" size={24} color={colors.text.primary} />
-                <Text style={styles.metricValue}>{overallAccuracy}%</Text>
-                <Text style={styles.metricLabel}>Accuracy Rate</Text>
-              </LinearGradient>
-            </GlassCard>
-
-            <GlassCard style={styles.metricCard}>
-              <LinearGradient
-                colors={colors.gradients.secondary as any}
-                style={styles.metricGradient}
-              >
-                <Ionicons name="flame" size={24} color={colors.text.primary} />
-                <Text style={styles.metricValue}>7</Text>
-                <Text style={styles.metricLabel}>Day Streak</Text>
-              </LinearGradient>
-            </GlassCard>
-
-            <GlassCard style={styles.metricCard}>
-              <LinearGradient
-                colors={colors.gradients.success as any}
-                style={styles.metricGradient}
-              >
-                <Ionicons name="calendar" size={24} color={colors.text.primary} />
-                <Text style={styles.metricValue}>{averagePerDay}</Text>
-                <Text style={styles.metricLabel}>Daily Average</Text>
-              </LinearGradient>
-            </GlassCard>
+          {/* Primary Metrics */}
+          <View style={styles.primaryMetrics}>
+            <View style={styles.metricLarge}>
+              <Text style={styles.metricLargeValue}>{totalCards}</Text>
+              <Text style={styles.metricLargeLabel}>CARDS REVIEWED</Text>
+            </View>
+            
+            <View style={styles.metricDivider} />
+            
+            <View style={styles.metricLarge}>
+              <Text style={styles.metricLargeValue}>{avgAccuracy}%</Text>
+              <Text style={styles.metricLargeLabel}>AVG ACCURACY</Text>
+            </View>
           </View>
 
-          {/* Weekly Chart */}
-          <GlassCard style={styles.chartCard}>
-            <Text style={styles.chartTitle}>This Week's Activity</Text>
+          {/* Secondary Metrics */}
+          <View style={styles.secondaryMetrics}>
+            <View style={styles.metricSmall}>
+              <Text style={styles.metricSmallValue}>{avgPerDay}</Text>
+              <Text style={styles.metricSmallLabel}>PER DAY</Text>
+            </View>
+            
+            <View style={styles.metricSmall}>
+              <Text style={styles.metricSmallValue}>7</Text>
+              <Text style={styles.metricSmallLabel}>STREAK</Text>
+            </View>
+            
+            <View style={styles.metricSmall}>
+              <Text style={styles.metricSmallValue}>85%</Text>
+              <Text style={styles.metricSmallLabel}>RETENTION</Text>
+            </View>
+            
+            <View style={styles.metricSmall}>
+              <Text style={styles.metricSmallValue}>2.3h</Text>
+              <Text style={styles.metricSmallLabel}>TOTAL TIME</Text>
+            </View>
+          </View>
+
+          {/* Daily Chart */}
+          <View style={styles.chartSection}>
+            <Text style={styles.sectionTitle}>Daily Activity</Text>
             <View style={styles.chart}>
               {weeklyData.map((day, index) => {
-                const barHeight = (day.cards / maxCards) * 120;
-                const correctHeight = (day.correct / maxCards) * 120;
+                const barHeight = (day.cards / maxCards) * 100;
+                const isMax = day.cards === maxCards;
                 
                 return (
                   <View key={index} style={styles.barContainer}>
-                    <View style={styles.barWrapper}>
-                      <View style={[styles.bar, { height: barHeight }]}>
-                        <LinearGradient
-                          colors={[colors.glass.heavy, colors.glass.medium] as any}
-                          style={StyleSheet.absoluteFillObject}
-                        />
-                      </View>
-                      <View style={[styles.barCorrect, { height: correctHeight }]}>
-                        <LinearGradient
-                          colors={colors.gradients.primary as any}
-                          style={StyleSheet.absoluteFillObject}
-                        />
-                      </View>
-                    </View>
-                    <Text style={styles.barLabel}>{day.day}</Text>
                     <Text style={styles.barValue}>{day.cards}</Text>
+                    <View style={styles.barWrapper}>
+                      <View 
+                        style={[
+                          styles.bar,
+                          isMax && styles.barMax,
+                          { height: `${barHeight}%` }
+                        ]} 
+                      />
+                    </View>
+                    <Text style={[
+                      styles.barLabel,
+                      isMax && styles.barLabelMax
+                    ]}>
+                      {day.day}
+                    </Text>
                   </View>
                 );
               })}
             </View>
-            <View style={styles.chartLegend}>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: colors.glass.heavy }]} />
-                <Text style={styles.legendText}>Total Reviewed</Text>
+          </View>
+
+          {/* Best Performance */}
+          <View style={styles.bestPerformance}>
+            <Text style={styles.sectionTitle}>Best Day</Text>
+            <View style={styles.bestDay}>
+              <View>
+                <Text style={styles.bestDayValue}>
+                  {bestDay?.day === 'T' && weeklyData[3] === bestDay ? 'Thursday' :
+                   bestDay?.day === 'T' && weeklyData[1] === bestDay ? 'Tuesday' :
+                   bestDay?.day === 'M' ? 'Monday' :
+                   bestDay?.day === 'W' ? 'Wednesday' :
+                   bestDay?.day === 'F' ? 'Friday' :
+                   bestDay?.day === 'S' && weeklyData[5] === bestDay ? 'Saturday' : 'Sunday'}
+                </Text>
+                <Text style={styles.bestDayLabel}>
+                  {bestDay?.cards} cards reviewed
+                </Text>
               </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: colors.gradients.primary[0] }]} />
-                <Text style={styles.legendText}>Correct Answers</Text>
+              <View style={styles.bestDayAccuracy}>
+                <Text style={styles.bestDayAccuracyValue}>
+                  {bestDay?.accuracy}%
+                </Text>
+                <Text style={styles.bestDayAccuracyLabel}>ACCURACY</Text>
               </View>
             </View>
-          </GlassCard>
+          </View>
 
-          {/* Category Performance */}
-          <GlassCard style={styles.categoryCard}>
-            <Text style={styles.chartTitle}>Performance by Category</Text>
-            {categoryStats.map((category, index) => (
-              <View key={index} style={styles.categoryRow}>
-                <View style={styles.categoryInfo}>
-                  <Text style={styles.categoryName}>{category.name}</Text>
-                  <Text style={styles.categoryCards}>{category.cards} cards</Text>
-                </View>
-                <View style={styles.categoryAccuracy}>
-                  <Text style={styles.accuracyText}>{category.accuracy}%</Text>
-                  <View style={styles.accuracyBar}>
-                    <LinearGradient
-                      colors={category.color as any}
-                      style={[styles.accuracyFill, { width: `${category.accuracy}%` }]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
+          {/* Monthly Trend */}
+          <View style={styles.trendSection}>
+            <Text style={styles.sectionTitle}>Monthly Trend</Text>
+            <View style={styles.trendChart}>
+              {monthlyTrend.map((week, index) => (
+                <View key={index} style={styles.trendItem}>
+                  <Text style={styles.trendValue}>{week.total}</Text>
+                  <View style={styles.trendBar}>
+                    <View 
+                      style={[
+                        styles.trendFill,
+                        { height: `${(week.total / 350) * 100}%` }
+                      ]} 
                     />
                   </View>
+                  <Text style={styles.trendLabel}>{week.week}</Text>
                 </View>
-              </View>
-            ))}
-          </GlassCard>
-
-          {/* Achievement Section */}
-          <GlassCard style={styles.achievementCard}>
-            <Text style={styles.chartTitle}>Recent Achievements</Text>
-            <View style={styles.achievementGrid}>
-              <View style={styles.achievement}>
-                <LinearGradient
-                  colors={colors.gradients.premium as any}
-                  style={styles.achievementIcon}
-                >
-                  <Text style={styles.achievementEmoji}>🏆</Text>
-                </LinearGradient>
-                <Text style={styles.achievementName}>Week Warrior</Text>
-              </View>
-              <View style={styles.achievement}>
-                <LinearGradient
-                  colors={colors.gradients.accent as any}
-                  style={styles.achievementIcon}
-                >
-                  <Text style={styles.achievementEmoji}>🎯</Text>
-                </LinearGradient>
-                <Text style={styles.achievementName}>Accuracy Pro</Text>
-              </View>
-              <View style={styles.achievement}>
-                <LinearGradient
-                  colors={colors.gradients.primary as any}
-                  style={styles.achievementIcon}
-                >
-                  <Text style={styles.achievementEmoji}>📚</Text>
-                </LinearGradient>
-                <Text style={styles.achievementName}>500 Cards</Text>
-              </View>
-              <View style={styles.achievement}>
-                <LinearGradient
-                  colors={colors.gradients.secondary as any}
-                  style={styles.achievementIcon}
-                >
-                  <Text style={styles.achievementEmoji}>⚡</Text>
-                </LinearGradient>
-                <Text style={styles.achievementName}>Speed Learner</Text>
-              </View>
+              ))}
             </View>
-          </GlassCard>
+          </View>
+
+          {/* Categories Summary */}
+          <View style={styles.categoriesSection}>
+            <Text style={styles.sectionTitle}>By Category</Text>
+            <View style={styles.categoryList}>
+              {[
+                { name: 'Technology', cards: 245, percent: 35 },
+                { name: 'Languages', cards: 180, percent: 26 },
+                { name: 'Science', cards: 120, percent: 17 },
+                { name: 'History', cards: 95, percent: 14 },
+                { name: 'Mathematics', cards: 60, percent: 8 },
+              ].map((category, index) => (
+                <View key={index} style={styles.categoryRow}>
+                  <Text style={styles.categoryName}>{category.name}</Text>
+                  <View style={styles.categoryStats}>
+                    <Text style={styles.categoryCards}>{category.cards}</Text>
+                    <View style={styles.categoryBarContainer}>
+                      <View 
+                        style={[
+                          styles.categoryBar,
+                          { width: `${category.percent}%` }
+                        ]} 
+                      />
+                    </View>
+                    <Text style={styles.categoryPercent}>{category.percent}%</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000000',
   },
   safeArea: {
     flex: 1,
@@ -276,221 +252,260 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   header: {
-    padding: spacing.lg,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
   },
   title: {
     fontSize: typography.fontSize.xxxl,
-    fontWeight: 'bold',
-    color: colors.text.primary,
-  },
-  subtitle: {
-    fontSize: typography.fontSize.lg,
-    color: colors.text.secondary,
-    marginTop: spacing.xs,
+    fontWeight: '300',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
   },
   timeRangeContainer: {
     flexDirection: 'row',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: spacing.borderRadius.small,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   timeRangeButton: {
-    flex: 1,
-    marginHorizontal: spacing.xs,
-  },
-  timeRangeCard: {
-    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    alignItems: 'center',
-  },
-  timeRangeCardActive: {
-    padding: 0,
-    overflow: 'hidden',
-  },
-  timeRangeGradient: {
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    width: '100%',
-    alignItems: 'center',
+  },
+  timeRangeButtonActive: {
+    backgroundColor: 'rgba(0, 102, 255, 0.1)',
   },
   timeRangeText: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: '600',
-    color: colors.text.secondary,
+    fontSize: typography.fontSize.xs,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '500',
+    letterSpacing: 1,
   },
   timeRangeTextActive: {
-    color: colors.text.primary,
+    color: '#0066FF',
   },
-  metricsGrid: {
+  primaryMetrics: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.xxl,
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
   },
-  metricCard: {
-    width: (SCREEN_WIDTH - spacing.lg * 2 - spacing.sm * 2) / 2,
-    margin: spacing.xs,
-    padding: 0,
-    overflow: 'hidden',
-  },
-  metricGradient: {
-    padding: spacing.md,
+  metricLarge: {
+    flex: 1,
     alignItems: 'center',
   },
-  metricValue: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: 'bold',
-    color: colors.text.primary,
-    marginVertical: spacing.xs,
+  metricLargeValue: {
+    fontSize: 48,
+    fontWeight: '200',
+    color: '#FFFFFF',
+    lineHeight: 48,
   },
-  metricLabel: {
+  metricLargeLabel: {
     fontSize: typography.fontSize.xs,
-    color: colors.text.primary,
-    opacity: 0.9,
+    color: 'rgba(0, 212, 255, 0.7)',
+    letterSpacing: 2,
+    marginTop: spacing.xs,
   },
-  chartCard: {
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-    padding: spacing.lg,
+  metricDivider: {
+    width: 1,
+    height: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    marginHorizontal: spacing.xl,
   },
-  chartTitle: {
+  secondaryMetrics: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+  metricSmall: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    backgroundColor: 'rgba(0, 102, 255, 0.02)',
+    marginHorizontal: spacing.xs,
+    borderRadius: spacing.borderRadius.medium,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 102, 255, 0.05)',
+  },
+  metricSmallValue: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: '400',
+    color: '#FFFFFF',
+  },
+  metricSmallLabel: {
+    fontSize: 9,
+    color: 'rgba(255, 255, 255, 0.4)',
+    letterSpacing: 1,
+    marginTop: spacing.xs,
+  },
+  chartSection: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+  sectionTitle: {
     fontSize: typography.fontSize.lg,
-    fontWeight: '600',
-    color: colors.text.primary,
-    marginBottom: spacing.md,
+    fontWeight: '400',
+    color: '#FFFFFF',
+    marginBottom: spacing.lg,
   },
   chart: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    height: 150,
-    marginBottom: spacing.md,
+    height: 120,
   },
   barContainer: {
     flex: 1,
     alignItems: 'center',
-  },
-  barWrapper: {
-    width: 30,
-    height: 120,
     justifyContent: 'flex-end',
-    marginBottom: spacing.xs,
-  },
-  bar: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    borderRadius: spacing.borderRadius.small,
-    overflow: 'hidden',
-  },
-  barCorrect: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    borderRadius: spacing.borderRadius.small,
-    overflow: 'hidden',
-  },
-  barLabel: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
   },
   barValue: {
     fontSize: typography.fontSize.xs,
-    color: colors.text.secondary,
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginBottom: spacing.xs,
   },
-  chartLegend: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: spacing.md,
-  },
-  legendItem: {
-    flexDirection: 'row',
+  barWrapper: {
+    width: '60%',
+    height: 80,
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    marginHorizontal: spacing.md,
   },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: spacing.xs,
+  bar: {
+    width: '100%',
+    backgroundColor: 'rgba(0, 102, 255, 0.2)',
+    borderRadius: 2,
   },
-  legendText: {
+  barMax: {
+    backgroundColor: '#0066FF',
+  },
+  barLabel: {
     fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
+    color: 'rgba(255, 255, 255, 0.3)',
+    marginTop: spacing.xs,
   },
-  categoryCard: {
+  barLabelMax: {
+    color: '#0066FF',
+  },
+  bestPerformance: {
     marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-    padding: spacing.lg,
+    marginBottom: spacing.xl,
   },
+  bestDay: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 102, 255, 0.02)',
+    borderRadius: spacing.borderRadius.medium,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 102, 255, 0.05)',
+  },
+  bestDayValue: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: '400',
+    color: '#FFFFFF',
+  },
+  bestDayLabel: {
+    fontSize: typography.fontSize.sm,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: spacing.xs,
+  },
+  bestDayAccuracy: {
+    alignItems: 'center',
+  },
+  bestDayAccuracyValue: {
+    fontSize: typography.fontSize.xxl,
+    fontWeight: '300',
+    color: '#00D4FF',
+  },
+  bestDayAccuracyLabel: {
+    fontSize: 9,
+    color: 'rgba(0, 212, 255, 0.7)',
+    letterSpacing: 1,
+  },
+  trendSection: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+  trendChart: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  trendItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  trendValue: {
+    fontSize: typography.fontSize.xs,
+    color: 'rgba(255, 255, 255, 0.3)',
+    marginBottom: spacing.xs,
+  },
+  trendBar: {
+    width: 40,
+    height: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: spacing.borderRadius.small,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  trendFill: {
+    width: '100%',
+    backgroundColor: 'rgba(0, 102, 255, 0.3)',
+  },
+  trendLabel: {
+    fontSize: typography.fontSize.xs,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: spacing.xs,
+  },
+  categoriesSection: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+  categoryList: {},
   categoryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  categoryInfo: {
-    flex: 1,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.02)',
   },
   categoryName: {
     fontSize: typography.fontSize.md,
-    fontWeight: '600',
-    color: colors.text.primary,
+    color: 'rgba(255, 255, 255, 0.7)',
+    flex: 1,
+  },
+  categoryStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1.5,
   },
   categoryCards: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
+    fontSize: typography.fontSize.sm,
+    color: 'rgba(255, 255, 255, 0.5)',
+    width: 40,
+    textAlign: 'right',
   },
-  categoryAccuracy: {
+  categoryBarContainer: {
     flex: 1,
-    alignItems: 'flex-end',
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    marginHorizontal: spacing.md,
+    borderRadius: 1,
   },
-  accuracyText: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: '600',
-    color: colors.text.secondary,
-    marginBottom: spacing.xs,
-  },
-  accuracyBar: {
-    width: '100%',
-    height: 4,
-    backgroundColor: colors.glass.light,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  accuracyFill: {
+  categoryBar: {
     height: '100%',
-    borderRadius: 2,
+    backgroundColor: '#0066FF',
+    borderRadius: 1,
   },
-  achievementCard: {
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-    padding: spacing.lg,
-  },
-  achievementGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-  },
-  achievement: {
-    alignItems: 'center',
-    width: '45%',
-    marginBottom: spacing.md,
-  },
-  achievementIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  achievementEmoji: {
-    fontSize: 28,
-  },
-  achievementName: {
+  categoryPercent: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.secondary,
-    textAlign: 'center',
+    color: 'rgba(255, 255, 255, 0.3)',
+    width: 35,
   },
 });

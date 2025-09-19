@@ -1,11 +1,15 @@
 // ============================================
 // src/services/api/auth.ts
 // ============================================
-import api, { tokenManager } from './client';
-import { User } from '../../types/user_types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { User, SubscriptionTier } from '../../types/user_types';
+
+// Toggle this to false when you have a real backend
+const USE_MOCK_AUTH = true;
 
 // Auth response types
 interface LoginResponse {
+  requiresVerification: boolean;
   user: User;
   accessToken: string;
   refreshToken: string;
@@ -33,29 +37,83 @@ interface ChangePasswordRequest {
   newPassword: string;
 }
 
+// Token manager for mock implementation
+const mockTokenManager = {
+  async setTokens(accessToken: string, refreshToken: string) {
+    await AsyncStorage.setItem('accessToken', accessToken);
+    await AsyncStorage.setItem('refreshToken', refreshToken);
+  },
+  async getAccessToken() {
+    return AsyncStorage.getItem('accessToken');
+  },
+  async getRefreshToken() {
+    return AsyncStorage.getItem('refreshToken');
+  },
+  async clearTokens() {
+    await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
+  }
+};
+
+// Mock user generator with correct User type structure
+const createMockUser = (email: string, username?: string): User => ({
+  id: `user_${Date.now()}`,
+  email: email.toLowerCase().trim(),
+  username: username || email.split('@')[0],
+  avatar: undefined, // Optional field
+  subscription: SubscriptionTier.FREE,
+  stats: {
+    streak: 0,
+    totalReviews: 0,
+    cardsLearned: 0,
+    minutesStudied: 0,
+    retentionRate: 0,
+    level: 1,
+    xp: 0,
+  },
+  preferences: {
+    dailyGoal: 20,
+    notificationTime: '09:00',
+    soundEnabled: true,
+    hapticEnabled: true,
+    theme: 'dark',
+  },
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  emailVerified: undefined
+});
+
+// Simulate network delay
+const mockDelay = (ms: number = 1000) => new Promise(resolve => setTimeout(resolve, ms));
+
 // Auth service class
 class AuthService {
   /**
    * Login user with email and password
    */
   async login(email: string, password: string): Promise<LoginResponse> {
-    try {
-      const response = await api.post<LoginResponse>('/auth/login', {
-        email: email.toLowerCase().trim(),
-        password,
-      });
-
-      // Store tokens
-      await tokenManager.setTokens(response.accessToken, response.refreshToken);
-
-      return response;
-    } catch (error: any) {
-      console.error('Login error:', error);
-      throw {
-        message: error.message || 'Failed to login',
-        errors: error.errors || {},
+    if (USE_MOCK_AUTH) {
+      // Mock implementation
+      await mockDelay();
+      
+      const mockUser = createMockUser(email);
+      const mockResponse: LoginResponse = {
+        user: mockUser,
+        accessToken: `mock_access_${Date.now()}`,
+        refreshToken: `mock_refresh_${Date.now()}`,
+        requiresVerification: false
       };
+      
+      // Store tokens and user
+      await mockTokenManager.setTokens(mockResponse.accessToken, mockResponse.refreshToken);
+      await AsyncStorage.setItem('user', JSON.stringify(mockUser));
+      
+      console.log('Mock login successful for:', email);
+      return mockResponse;
     }
+    
+    // Real implementation would go here
+    // When you have a backend, add the real API call here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
@@ -67,232 +125,227 @@ class AuthService {
     username: string,
     marketingConsent: boolean = false
   ): Promise<SignupResponse> {
-    try {
-      const response = await api.post<SignupResponse>('/auth/signup', {
-        email: email.toLowerCase().trim(),
-        password,
-        username: username.trim(),
-        marketingConsent,
-      });
-
-      // Store tokens
-      await tokenManager.setTokens(response.accessToken, response.refreshToken);
-
-      return response;
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      throw {
-        message: error.message || 'Failed to create account',
-        errors: error.errors || {},
+    if (USE_MOCK_AUTH) {
+      // Mock implementation
+      await mockDelay();
+      
+      const mockUser = createMockUser(email, username);
+      const mockResponse: SignupResponse = {
+        user: mockUser,
+        accessToken: `mock_access_${Date.now()}`,
+        refreshToken: `mock_refresh_${Date.now()}`,
+        requiresVerification: false
       };
+      
+      // Store tokens and user
+      await mockTokenManager.setTokens(mockResponse.accessToken, mockResponse.refreshToken);
+      await AsyncStorage.setItem('user', JSON.stringify(mockUser));
+      
+      console.log('Mock signup successful for:', email);
+      return mockResponse;
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
    * Logout user
    */
   async logout(): Promise<void> {
-    try {
-      const refreshToken = await tokenManager.getRefreshToken();
-      
-      // Notify server about logout (optional, for token invalidation)
-      if (refreshToken) {
-        await api.post('/auth/logout', { refreshToken }).catch(err => {
-          console.log('Server logout failed:', err);
-        });
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      // Always clear local tokens
-      await tokenManager.clearTokens();
+    if (USE_MOCK_AUTH) {
+      await mockDelay(500);
+      await mockTokenManager.clearTokens();
+      console.log('Mock logout successful');
+      return;
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
    * Refresh access token
    */
   async refreshToken(): Promise<RefreshTokenResponse> {
-    try {
-      const refreshToken = await tokenManager.getRefreshToken();
+    if (USE_MOCK_AUTH) {
+      await mockDelay(500);
       
+      const refreshToken = await mockTokenManager.getRefreshToken();
       if (!refreshToken) {
         throw new Error('No refresh token available');
       }
-
-      const response = await api.post<RefreshTokenResponse>('/auth/refresh', {
-        refreshToken,
-      });
-
-      // Update tokens
-      await tokenManager.setTokens(response.accessToken, response.refreshToken);
-
-      return response;
-    } catch (error: any) {
-      console.error('Token refresh error:', error);
-      // Clear tokens on refresh failure
-      await tokenManager.clearTokens();
-      throw {
-        message: 'Session expired. Please login again.',
-        requiresLogin: true,
+      
+      const newTokens = {
+        accessToken: `mock_access_${Date.now()}`,
+        refreshToken: `mock_refresh_${Date.now()}`,
       };
+      
+      await mockTokenManager.setTokens(newTokens.accessToken, newTokens.refreshToken);
+      return newTokens;
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
    * Send password reset email
    */
   async requestPasswordReset(email: string): Promise<ResetPasswordResponse> {
-    try {
-      const response = await api.post<ResetPasswordResponse>('/auth/password-reset', {
-        email: email.toLowerCase().trim(),
-      });
-
-      return response;
-    } catch (error: any) {
-      console.error('Password reset request error:', error);
-      throw {
-        message: error.message || 'Failed to send reset email',
+    if (USE_MOCK_AUTH) {
+      await mockDelay();
+      console.log('Mock password reset email sent to:', email);
+      return {
+        message: 'Password reset email sent (mock)',
+        success: true,
       };
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
    * Reset password with token
    */
   async resetPassword(token: string, newPassword: string): Promise<ResetPasswordResponse> {
-    try {
-      const response = await api.post<ResetPasswordResponse>('/auth/password-reset/confirm', {
-        token,
-        newPassword,
-      });
-
-      return response;
-    } catch (error: any) {
-      console.error('Password reset error:', error);
-      throw {
-        message: error.message || 'Failed to reset password',
+    if (USE_MOCK_AUTH) {
+      await mockDelay();
+      console.log('Mock password reset successful');
+      return {
+        message: 'Password reset successfully (mock)',
+        success: true,
       };
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
    * Verify email with token
    */
   async verifyEmail(token: string): Promise<VerifyEmailResponse> {
-    try {
-      const response = await api.post<VerifyEmailResponse>('/auth/verify-email', {
-        token,
-      });
-
-      return response;
-    } catch (error: any) {
-      console.error('Email verification error:', error);
-      throw {
-        message: error.message || 'Failed to verify email',
+    if (USE_MOCK_AUTH) {
+      await mockDelay();
+      console.log('Mock email verification successful');
+      return {
+        message: 'Email verified successfully (mock)',
+        success: true,
       };
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
    * Resend verification email
    */
   async resendVerificationEmail(email: string): Promise<VerifyEmailResponse> {
-    try {
-      const response = await api.post<VerifyEmailResponse>('/auth/resend-verification', {
-        email: email.toLowerCase().trim(),
-      });
-
-      return response;
-    } catch (error: any) {
-      console.error('Resend verification error:', error);
-      throw {
-        message: error.message || 'Failed to resend verification email',
+    if (USE_MOCK_AUTH) {
+      await mockDelay();
+      console.log('Mock verification email resent to:', email);
+      return {
+        message: 'Verification email sent (mock)',
+        success: true,
       };
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
    * Change user password
    */
   async changePassword(request: ChangePasswordRequest): Promise<ResetPasswordResponse> {
-    try {
-      const response = await api.post<ResetPasswordResponse>('/auth/change-password', request);
-      return response;
-    } catch (error: any) {
-      console.error('Change password error:', error);
-      throw {
-        message: error.message || 'Failed to change password',
-        errors: error.errors || {},
+    if (USE_MOCK_AUTH) {
+      await mockDelay();
+      console.log('Mock password change successful');
+      return {
+        message: 'Password changed successfully (mock)',
+        success: true,
       };
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
    * Check if user is authenticated
    */
   async checkAuthStatus(): Promise<User | null> {
-    try {
-      const token = await tokenManager.getAccessToken();
+    if (USE_MOCK_AUTH) {
+      await mockDelay(200);
       
+      const token = await mockTokenManager.getAccessToken();
       if (!token) {
         return null;
       }
-
-      const response = await api.get<User>('/auth/me');
-      return response;
-    } catch (error: any) {
-      console.error('Auth check error:', error);
       
-      // If auth check fails, clear tokens
-      if (error.status === 401) {
-        await tokenManager.clearTokens();
+      const userStr = await AsyncStorage.getItem('user');
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        // Convert date strings back to Date objects
+        return {
+          ...userData,
+          createdAt: new Date(userData.createdAt),
+          updatedAt: new Date(userData.updatedAt),
+        } as User;
       }
       
       return null;
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
    * OAuth login
    */
   async oauthLogin(provider: 'google' | 'apple', token: string): Promise<LoginResponse> {
-    try {
-      const response = await api.post<LoginResponse>(`/auth/oauth/${provider}`, {
-        token,
-      });
-
-      // Store tokens
-      await tokenManager.setTokens(response.accessToken, response.refreshToken);
-
-      return response;
-    } catch (error: any) {
-      console.error('OAuth login error:', error);
-      throw {
-        message: error.message || `Failed to login with ${provider}`,
+    if (USE_MOCK_AUTH) {
+      await mockDelay();
+      
+      const mockUser = createMockUser(`${provider}.user@example.com`, `${provider}_user`);
+      const mockResponse: LoginResponse = {
+        user: mockUser,
+        accessToken: `mock_access_${Date.now()}`,
+        refreshToken: `mock_refresh_${Date.now()}`,
+        requiresVerification: false
       };
+      
+      await mockTokenManager.setTokens(mockResponse.accessToken, mockResponse.refreshToken);
+      await AsyncStorage.setItem('user', JSON.stringify(mockUser));
+      
+      console.log(`Mock ${provider} OAuth login successful`);
+      return mockResponse;
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 
   /**
    * Delete user account
    */
   async deleteAccount(password: string): Promise<{ success: boolean; message: string }> {
-    try {
-      const response = await api.delete<{ success: boolean; message: string }>('/auth/account', {
-        data: { password },
-      });
-
-      // Clear tokens after account deletion
-      await tokenManager.clearTokens();
-
-      return response;
-    } catch (error: any) {
-      console.error('Delete account error:', error);
-      throw {
-        message: error.message || 'Failed to delete account',
+    if (USE_MOCK_AUTH) {
+      await mockDelay();
+      await mockTokenManager.clearTokens();
+      console.log('Mock account deletion successful');
+      return {
+        success: true,
+        message: 'Account deleted successfully (mock)',
       };
     }
+    
+    // Real implementation would go here
+    throw new Error('Real backend not configured yet');
   }
 }
 

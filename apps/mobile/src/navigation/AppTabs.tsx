@@ -6,9 +6,10 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
+// Import screens
 import HomeScreen from '../screens/home/HomeScreen';
 import ReviewScreen from '../screens/review/ReviewScreen';
-import LibraryScreen from '../screens/library/LibraryScreen';
+import ContentLibrary from '../screens/content/ContentLibrary'; // Updated to use the new ContentLibrary
 import StatsScreen from '../screens/stats/StatsScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 
@@ -16,7 +17,15 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 
-const Tab = createBottomTabNavigator();
+export type AppTabsParamList = {
+  Home: undefined;
+  Review: undefined;
+  Library: undefined;
+  Stats: undefined;
+  Profile: undefined;
+};
+
+const Tab = createBottomTabNavigator<AppTabsParamList>();
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -72,7 +81,7 @@ export default function AppTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Review" component={ReviewScreen} />
-      <Tab.Screen name="Library" component={LibraryScreen} />
+      <Tab.Screen name="Library" component={ContentLibrary} />
       <Tab.Screen name="Stats" component={StatsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

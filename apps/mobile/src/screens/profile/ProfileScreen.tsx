@@ -6,122 +6,103 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   Switch,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 
-import { GlassCard } from '../../components/common/GlassCard';
-import { PremiumButton } from '../../components/common/PremiumButton';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing } from '../../theme/spacing';
-import { shadows } from '../../theme/shadows';
 
 // Mock user data
 const mockUser = {
   name: 'Alex Morgan',
   email: 'alex.morgan@example.com',
-  avatar: null, // Will use initials
-  plan: 'Pro',
-  joinDate: 'September 2024',
-  totalCards: 1247,
-  totalDecks: 28,
-  studyStreak: 15,
-  achievements: 12,
+  plan: 'PRO',
+  joinDate: new Date('2024-09-01'),
   level: 8,
   xp: 3250,
-  xpToNextLevel: 750,
+  xpToNext: 750,
 };
 
 interface SettingItemProps {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon?: keyof typeof Ionicons.glyphMap;
   title: string;
-  subtitle?: string;
+  value?: string;
   onPress?: () => void;
   hasToggle?: boolean;
   toggleValue?: boolean;
   onToggle?: (value: boolean) => void;
-  showBadge?: boolean;
-  badgeText?: string;
+  isDanger?: boolean;
 }
 
 const SettingItem: React.FC<SettingItemProps> = ({
   icon,
   title,
-  subtitle,
+  value,
   onPress,
   hasToggle,
   toggleValue,
   onToggle,
-  showBadge,
-  badgeText,
+  isDanger,
 }) => {
-  const handlePress = () => {
-    if (onPress) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      onPress();
-    }
-  };
-
   return (
     <TouchableOpacity 
       style={styles.settingItem} 
-      onPress={handlePress}
+      onPress={() => {
+        if (onPress) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onPress();
+        }
+      }}
       disabled={hasToggle}
       activeOpacity={0.7}
     >
       <View style={styles.settingLeft}>
-        <View style={styles.settingIconContainer}>
-          <LinearGradient
-            colors={[colors.glass.medium, colors.glass.light]}
-            style={styles.settingIconGradient}
-          >
-            <Ionicons name={icon} size={20} color={colors.text.primary} />
-          </LinearGradient>
-        </View>
-        <View style={styles.settingContent}>
-          <Text style={styles.settingTitle}>{title}</Text>
-          {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
-        </View>
+        {icon && (
+          <Ionicons 
+            name={icon} 
+            size={20} 
+            color={isDanger ? '#EF4444' : 'rgba(255, 255, 255, 0.5)'} 
+            style={styles.settingIcon}
+          />
+        )}
+        <Text style={[
+          styles.settingTitle,
+          isDanger && styles.settingTitleDanger
+        ]}>
+          {title}
+        </Text>
       </View>
       
       <View style={styles.settingRight}>
-        {showBadge && badgeText && (
-          <View style={styles.badge}>
-            <LinearGradient
-              colors={colors.gradients.accent as any}
-              style={styles.badgeGradient}
-            >
-              <Text style={styles.badgeText}>{badgeText}</Text>
-            </LinearGradient>
-          </View>
+        {value && (
+          <Text style={styles.settingValue}>{value}</Text>
         )}
-        {hasToggle ? (
+        {hasToggle && (
           <Switch
             value={toggleValue}
             onValueChange={onToggle}
             trackColor={{ 
-              false: colors.glass.medium, 
-              true: colors.gradients.primary[0] 
+              false: 'rgba(255, 255, 255, 0.1)', 
+              true: '#0066FF'
             }}
-            thumbColor={colors.text.primary}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="rgba(255, 255, 255, 0.1)"
           />
-        ) : (
-          !showBadge && (
-            <Ionicons 
-              name="chevron-forward" 
-              size={20} 
-              color={colors.text.tertiary} 
-            />
-          )
+        )}
+        {onPress && !hasToggle && !value && (
+          <Ionicons 
+            name="chevron-forward" 
+            size={20} 
+            color="rgba(255, 255, 255, 0.2)" 
+          />
         )}
       </View>
     </TouchableOpacity>
@@ -131,23 +112,28 @@ const SettingItem: React.FC<SettingItemProps> = ({
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
+  const [reminders, setReminders] = useState(true);
   const [offlineMode, setOfflineMode] = useState(false);
 
-  const progressPercentage = (mockUser.xp / (mockUser.xp + mockUser.xpToNextLevel)) * 100;
+  const getInitials = (name: string) => {
+    return name.split(' ').map(part => part[0]).join('').toUpperCase();
+  };
+
+  const getMemberDuration = (joinDate: Date) => {
+    const months = Math.floor((Date.now() - joinDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
+    return `${months} months`;
+  };
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
+      'Sign Out',
+      'Are you sure you want to sign out?',
       [
         { text: 'Cancel', style: 'cancel' },
         { 
-          text: 'Logout', 
+          text: 'Sign Out', 
           style: 'destructive',
           onPress: () => {
-            // Dispatch logout action
             console.log('Logging out...');
           }
         },
@@ -155,238 +141,166 @@ export default function ProfileScreen() {
     );
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase();
-  };
-
   return (
-    <LinearGradient
-      colors={[colors.background.primary, colors.background.secondary]}
-      style={styles.container}
-    >
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#000000', '#0A0A0F']}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
       <SafeAreaView style={styles.safeArea}>
         <ScrollView 
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          bounces={false}
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Profile</Text>
-            <TouchableOpacity 
-              style={styles.settingsButton}
-              onPress={() => console.log('Settings')}
-            >
-              <BlurView intensity={20} style={styles.settingsBlur}>
-                <Ionicons name="settings-outline" size={24} color={colors.text.primary} />
-              </BlurView>
-            </TouchableOpacity>
+            <Text style={styles.title}>Profile</Text>
           </View>
 
-          {/* Profile Card */}
-          <GlassCard style={styles.profileCard}>
-            <LinearGradient
-              colors={colors.gradients.premium as any}
-              style={styles.profileGradient}
-            >
-              {/* Avatar Section */}
-              <View style={styles.avatarSection}>
-                {mockUser.avatar ? (
-                  <Image source={{ uri: mockUser.avatar }} style={styles.avatar} />
-                ) : (
-                  <LinearGradient
-                    colors={colors.gradients.holographic as any}
-                    style={styles.avatarPlaceholder}
-                  >
-                    <Text style={styles.avatarInitials}>
-                      {getInitials(mockUser.name)}
-                    </Text>
-                  </LinearGradient>
-                )}
-                
-                {/* Plan Badge */}
-                <View style={styles.planBadge}>
-                  <LinearGradient
-                    colors={colors.gradients.premium as any}
-                    style={styles.planBadgeGradient}
-                  >
-                    <Ionicons name="diamond" size={12} color={colors.text.primary} />
-                    <Text style={styles.planBadgeText}>{mockUser.plan}</Text>
-                  </LinearGradient>
-                </View>
+          {/* User Info Section */}
+          <View style={styles.userSection}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{getInitials(mockUser.name)}</Text>
               </View>
-
-              {/* User Info */}
-              <Text style={styles.userName}>{mockUser.name}</Text>
-              <Text style={styles.userEmail}>{mockUser.email}</Text>
-              <Text style={styles.joinDate}>Member since {mockUser.joinDate}</Text>
-
-              {/* Level Progress */}
-              <View style={styles.levelSection}>
-                <View style={styles.levelHeader}>
-                  <Text style={styles.levelText}>Level {mockUser.level}</Text>
-                  <Text style={styles.xpText}>{mockUser.xp} / {mockUser.xp + mockUser.xpToNextLevel} XP</Text>
+              {mockUser.plan === 'PRO' && (
+                <View style={styles.proBadge}>
+                  <Text style={styles.proBadgeText}>PRO</Text>
                 </View>
-                <View style={styles.progressBar}>
-                  <LinearGradient
-                    colors={colors.gradients.primary as any}
-                    style={[styles.progressFill, { width: `${progressPercentage}%` }]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  />
-                </View>
-                <Text style={styles.nextLevelText}>
-                  {mockUser.xpToNextLevel} XP to Level {mockUser.level + 1}
+              )}
+            </View>
+            
+            <Text style={styles.userName}>{mockUser.name}</Text>
+            <Text style={styles.userEmail}>{mockUser.email}</Text>
+            
+            {/* Level Progress */}
+            <View style={styles.levelContainer}>
+              <View style={styles.levelHeader}>
+                <Text style={styles.levelText}>LEVEL {mockUser.level}</Text>
+                <Text style={styles.xpText}>
+                  {mockUser.xp} / {mockUser.xp + mockUser.xpToNext} XP
                 </Text>
               </View>
-            </LinearGradient>
-          </GlassCard>
-
-          {/* Stats Grid */}
-          <View style={styles.statsGrid}>
-            <GlassCard style={styles.statCard}>
-              <LinearGradient
-                colors={[colors.gradients.primary[1], colors.gradients.primary[0]] as any}
-                style={styles.statGradient}
-              >
-                <Ionicons name="flame" size={24} color={colors.text.primary} />
-                <Text style={styles.statValue}>{mockUser.studyStreak}</Text>
-                <Text style={styles.statLabel}>Day Streak</Text>
-              </LinearGradient>
-            </GlassCard>
-
-            <GlassCard style={styles.statCard}>
-              <LinearGradient
-                colors={[colors.gradients.secondary[1], colors.gradients.secondary[0]] as any}
-                style={styles.statGradient}
-              >
-                <Ionicons name="library" size={24} color={colors.text.primary} />
-                <Text style={styles.statValue}>{mockUser.totalDecks}</Text>
-                <Text style={styles.statLabel}>Total Decks</Text>
-              </LinearGradient>
-            </GlassCard>
-
-            <GlassCard style={styles.statCard}>
-              <LinearGradient
-                colors={[colors.gradients.accent[1], colors.gradients.accent[0]] as any}
-                style={styles.statGradient}
-              >
-                <Ionicons name="layers" size={24} color={colors.text.primary} />
-                <Text style={styles.statValue}>{mockUser.totalCards}</Text>
-                <Text style={styles.statLabel}>Cards Studied</Text>
-              </LinearGradient>
-            </GlassCard>
-
-            <GlassCard style={styles.statCard}>
-              <LinearGradient
-                colors={[colors.gradients.success[1], colors.gradients.success[0]] as any}
-                style={styles.statGradient}
-              >
-                <Ionicons name="trophy" size={24} color={colors.text.primary} />
-                <Text style={styles.statValue}>{mockUser.achievements}</Text>
-                <Text style={styles.statLabel}>Achievements</Text>
-              </LinearGradient>
-            </GlassCard>
+              <View style={styles.progressBar}>
+                <View 
+                  style={[
+                    styles.progressFill, 
+                    { width: `${(mockUser.xp / (mockUser.xp + mockUser.xpToNext)) * 100}%` }
+                  ]} 
+                />
+              </View>
+            </View>
           </View>
 
-          {/* Settings Section */}
-          <GlassCard style={styles.settingsSection}>
-            <Text style={styles.sectionTitle}>Preferences</Text>
+          {/* Quick Stats */}
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>1,247</Text>
+              <Text style={styles.statLabel}>CARDS</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>28</Text>
+              <Text style={styles.statLabel}>DECKS</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>15</Text>
+              <Text style={styles.statLabel}>STREAK</Text>
+            </View>
+          </View>
+
+          {/* Settings Sections */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>PREFERENCES</Text>
             
             <SettingItem
               icon="notifications-outline"
               title="Daily Reminders"
-              subtitle="Get notified for daily reviews"
               hasToggle
-              toggleValue={notificationsEnabled}
-              onToggle={setNotificationsEnabled}
-            />
-            
-            <SettingItem
-              icon="moon-outline"
-              title="Dark Mode"
-              subtitle="Always enabled for premium feel"
-              hasToggle
-              toggleValue={darkMode}
-              onToggle={setDarkMode}
+              toggleValue={reminders}
+              onToggle={setReminders}
             />
             
             <SettingItem
               icon="cloud-offline-outline"
               title="Offline Mode"
-              subtitle="Study without internet"
               hasToggle
               toggleValue={offlineMode}
               onToggle={setOfflineMode}
             />
-          </GlassCard>
+            
+            <SettingItem
+              icon="time-outline"
+              title="Study Time"
+              value="9:00 AM"
+              onPress={() => console.log('Change study time')}
+            />
+          </View>
 
-          {/* Account Section */}
-          <GlassCard style={styles.settingsSection}>
-            <Text style={styles.sectionTitle}>Account</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>ACCOUNT</Text>
             
             <SettingItem
               icon="diamond-outline"
               title="Subscription"
-              subtitle="Pro Plan - Active"
+              value="Pro Plan"
               onPress={() => console.log('Subscription')}
-              showBadge
-              badgeText="PRO"
+            />
+            
+            <SettingItem
+              icon="calendar-outline"
+              title="Member Since"
+              value={getMemberDuration(mockUser.joinDate)}
             />
             
             <SettingItem
               icon="shield-checkmark-outline"
-              title="Privacy & Security"
+              title="Privacy"
               onPress={() => console.log('Privacy')}
             />
             
             <SettingItem
               icon="help-circle-outline"
-              title="Help & Support"
+              title="Support"
               onPress={() => console.log('Support')}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>ABOUT</Text>
+            
+            <SettingItem
+              title="Version"
+              value="1.0.0"
             />
             
             <SettingItem
-              icon="information-circle-outline"
-              title="About MindForge"
-              subtitle="Version 1.0.0"
-              onPress={() => console.log('About')}
+              title="Build"
+              value="2024.1"
             />
-          </GlassCard>
-
-          {/* Logout Button */}
-          <PremiumButton
-            title="Logout"
-            onPress={handleLogout}
-            variant="secondary"
-            size="large"
-            style={styles.logoutButton}
-          />
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              Made with passion for learning
-            </Text>
-            <LinearGradient
-              colors={colors.gradients.premium as any}
-              style={styles.footerGradient}
-            >
-              <Text style={styles.footerEmoji}>✨</Text>
-            </LinearGradient>
           </View>
+
+          {/* Sign Out */}
+          <TouchableOpacity 
+            style={styles.signOutButton}
+            onPress={handleLogout}
+          >
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000000',
   },
   safeArea: {
     flex: 1,
@@ -395,101 +309,68 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
   },
-  headerTitle: {
+  title: {
     fontSize: typography.fontSize.xxxl,
-    fontWeight: 'bold',
-    color: colors.text.primary,
+    fontWeight: '300',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
   },
-  settingsButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    overflow: 'hidden',
-  },
-  settingsBlur: {
-    flex: 1,
-    justifyContent: 'center',
+  userSection: {
     alignItems: 'center',
-    backgroundColor: colors.glass.light,
+    paddingVertical: spacing.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
-  profileCard: {
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-    padding: 0,
-    overflow: 'hidden',
-  },
-  profileGradient: {
-    padding: spacing.xl,
-    alignItems: 'center',
-  },
-  avatarSection: {
+  avatarContainer: {
     position: 'relative',
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 3,
-    borderColor: colors.glass.shimmer,
-  },
-  avatarPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(0, 102, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 102, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatarInitials: {
-    fontSize: typography.fontSize.xxxl,
-    fontWeight: 'bold',
-    color: colors.text.primary,
+  avatarText: {
+    fontSize: typography.fontSize.xxl,
+    fontWeight: '400',
+    color: '#0066FF',
   },
-  planBadge: {
+  proBadge: {
     position: 'absolute',
     bottom: 0,
     right: -5,
+    backgroundColor: '#0066FF',
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
     borderRadius: spacing.borderRadius.small,
-    overflow: 'hidden',
   },
-  planBadgeGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  planBadgeText: {
-    fontSize: typography.fontSize.xs,
+  proBadgeText: {
+    fontSize: 9,
     fontWeight: '700',
-    color: colors.text.primary,
-    marginLeft: spacing.xs,
-    textTransform: 'uppercase',
+    color: '#FFFFFF',
+    letterSpacing: 1,
   },
   userName: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: 'bold',
-    color: colors.text.primary,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '400',
+    color: '#FFFFFF',
     marginBottom: spacing.xs,
   },
   userEmail: {
-    fontSize: typography.fontSize.md,
-    color: colors.text.primary,
-    opacity: 0.9,
-    marginBottom: spacing.xs,
-  },
-  joinDate: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.primary,
-    opacity: 0.7,
-    marginBottom: spacing.lg,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginBottom: spacing.xl,
   },
-  levelSection: {
-    width: '100%',
+  levelContainer: {
+    width: '60%',
   },
   levelHeader: {
     flexDirection: 'row',
@@ -497,68 +378,62 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   levelText: {
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.xs,
+    color: 'rgba(0, 212, 255, 0.7)',
+    letterSpacing: 1,
     fontWeight: '600',
-    color: colors.text.primary,
   },
   xpText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.primary,
-    opacity: 0.8,
+    fontSize: typography.fontSize.xs,
+    color: 'rgba(255, 255, 255, 0.4)',
   },
   progressBar: {
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: spacing.xs,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 1,
   },
   progressFill: {
     height: '100%',
-    borderRadius: 4,
+    backgroundColor: '#0066FF',
+    borderRadius: 1,
   },
-  nextLevelText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.primary,
-    opacity: 0.7,
-    textAlign: 'center',
-  },
-  statsGrid: {
+  statsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
+    justifyContent: 'center',
+    paddingVertical: spacing.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
-  statCard: {
-    width: '48%',
-    margin: '1%',
-    padding: 0,
-    overflow: 'hidden',
-  },
-  statGradient: {
-    padding: spacing.md,
+  statItem: {
+    flex: 1,
     alignItems: 'center',
   },
   statValue: {
     fontSize: typography.fontSize.xl,
-    fontWeight: 'bold',
-    color: colors.text.primary,
-    marginVertical: spacing.xs,
+    fontWeight: '300',
+    color: '#FFFFFF',
   },
   statLabel: {
     fontSize: typography.fontSize.xs,
-    color: colors.text.primary,
-    opacity: 0.9,
+    color: 'rgba(255, 255, 255, 0.3)',
+    letterSpacing: 1,
+    marginTop: spacing.xs,
   },
-  settingsSection: {
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-    padding: spacing.lg,
+  statDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  section: {
+    paddingVertical: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: '600',
-    color: colors.text.primary,
+    fontSize: typography.fontSize.xs,
+    color: 'rgba(255, 255, 255, 0.3)',
+    letterSpacing: 2,
+    marginLeft: spacing.lg,
     marginBottom: spacing.md,
   },
   settingItem: {
@@ -566,78 +441,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.glass.border,
+    paddingHorizontal: spacing.lg,
   },
   settingLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  settingIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    overflow: 'hidden',
+  settingIcon: {
     marginRight: spacing.md,
-  },
-  settingIconGradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  settingContent: {
-    flex: 1,
   },
   settingTitle: {
     fontSize: typography.fontSize.md,
-    fontWeight: '500',
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '400',
   },
-  settingSubtitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
+  settingTitleDanger: {
+    color: '#EF4444',
   },
   settingRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  badge: {
-    borderRadius: spacing.borderRadius.small,
-    overflow: 'hidden',
-  },
-  badgeGradient: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-  },
-  badgeText: {
-    fontSize: typography.fontSize.xs,
-    fontWeight: '700',
-    color: colors.text.primary,
-    textTransform: 'uppercase',
-  },
-  logoutButton: {
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-  },
-  footer: {
-    alignItems: 'center',
-    paddingVertical: spacing.lg,
-  },
-  footerText: {
+  settingValue: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    marginBottom: spacing.sm,
+    color: 'rgba(255, 255, 255, 0.4)',
+    marginRight: spacing.xs,
   },
-  footerGradient: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
+  signOutButton: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.xl,
+    marginBottom: spacing.lg,
+    paddingVertical: spacing.lg,
+    borderRadius: spacing.borderRadius.medium,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
     alignItems: 'center',
   },
-  footerEmoji: {
-    fontSize: 20,
+  signOutText: {
+    fontSize: typography.fontSize.md,
+    color: '#EF4444',
+    fontWeight: '500',
+    letterSpacing: 0.5,
   },
 });
