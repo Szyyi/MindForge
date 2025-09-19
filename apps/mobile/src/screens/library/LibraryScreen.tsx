@@ -1,5 +1,5 @@
 // ============================================
-// src/screens/profile/ProfileScreen.tsx
+// src/screens/library/LibraryScreen.tsx
 // ============================================
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
@@ -7,13 +7,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import {colors} from '../../theme/colors';
 import {typography} from '../../theme/typography';
 
-export default function ProfileScreen() {
+export default function LibraryScreen() {
   return (
     <LinearGradient
       colors={[colors.background.primary, colors.background.secondary]}
       style={styles.container}
     >
-      <Text style={styles.text}>Profile Screen</Text>
+      <Text style={styles.text}>Library Screen</Text>
     </LinearGradient>
   );
 }
