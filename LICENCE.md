@@ -1,0 +1,80 @@
+# PROPRIETARY SOFTWARE LICENSE AGREEMENT
+
+## MindForge Application License
+
+Copyright (C) 2025 Oliver Moughton and Szymon Procak. All Rights Reserved.
+
+This Proprietary Software License Agreement (hereinafter referred to as "Agreement") is entered into effect as of the date of software access between Oliver Moughton and Szymon Procak (hereinafter collectively referred to as "Licensors" or "Copyright Holders") and any individual or entity accessing, downloading, installing, copying, or otherwise using the MindForge software application and associated documentation files (hereinafter referred to as the "Software").
+
+## 1. COPYRIGHT AND OWNERSHIP
+
+The Software, including but not limited to all source code, object code, documentation, designs, architectures, interfaces, databases, content, graphics, and all other materials contained therein or associated therewith, is the exclusive property of Oliver Moughton and Szymon Procak. The Software is protected by copyright laws and international copyright treaties, as well as other intellectual property laws and treaties. The structure, organization, and code of the Software are valuable trade secrets and confidential information of the Copyright Holders. All rights not expressly granted herein are reserved by the Copyright Holders.
+
+## 2. GRANT OF LICENSE
+
+Subject to the terms and conditions of this Agreement, the Licensors hereby grant you a limited, non-exclusive, non-transferable, revocable license to use the Software solely for evaluation and development purposes. This license does not permit any commercial use, distribution, modification, reverse engineering, decompilation, disassembly, or creation of derivative works based on the Software without the express written permission of both Oliver Moughton and Szymon Procak. The license granted herein is personal to you and may not be sublicensed, assigned, or transferred to any other person or entity without the prior written consent of the Licensors.
+
+## 3. RESTRICTIONS ON USE
+
+You acknowledge and agree that you shall not, and shall not permit any third party to: reproduce, copy, modify, adapt, alter, translate, or create derivative works from the Software except as expressly permitted in this Agreement; distribute, sell, lease, rent, loan, sublicense, or otherwise transfer the Software to any third party; reverse engineer, disassemble, decompile, or otherwise attempt to derive the source code of the Software; remove, alter, or obscure any proprietary notices, labels, or marks on or in the Software; use the Software to develop a product or service that competes with the Software or the business interests of the Licensors; use the Software for any unlawful purpose or in any manner that could damage, disable, overburden, or impair the Software; use the Software to process or store any content that violates any third-party rights or applicable laws; or publicly display, perform, or communicate the Software without prior written authorization.
+
+## 4. CONFIDENTIALITY
+
+You acknowledge that the Software contains proprietary and confidential information that is protected by applicable intellectual property and other laws. You agree to maintain the confidentiality of the Software and not to disclose any portion of the Software to any third party without the prior written consent of both Copyright Holders. You further agree to take all reasonable precautions to prevent any unauthorized disclosure of the Software, using at least the same degree of care that you would use to protect your own confidential information, but in no event less than reasonable care.
+
+## 5. INTELLECTUAL PROPERTY RIGHTS
+
+You acknowledge and agree that all intellectual property rights in and to the Software, including without limitation all copyrights, patents, trademarks, trade secrets, and any other proprietary rights, are and shall remain the exclusive property of Oliver Moughton and Szymon Procak. Nothing in this Agreement shall be construed as granting you any rights, title, or interest in or to the Software or any intellectual property rights therein, except for the limited license expressly granted herein. Any feedback, suggestions, or contributions you provide regarding the Software shall become the exclusive property of the Licensors, and you hereby assign all rights, title, and interest in such feedback to the Licensors.
+
+## 6. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. THE LICENSORS DO NOT WARRANT THAT THE SOFTWARE WILL MEET YOUR REQUIREMENTS, THAT THE OPERATION OF THE SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE, OR THAT DEFECTS IN THE SOFTWARE WILL BE CORRECTED. YOU ACKNOWLEDGE THAT THE SOFTWARE IS IN DEVELOPMENT AND MAY CONTAIN BUGS, ERRORS, AND OTHER PROBLEMS THAT COULD CAUSE SYSTEM FAILURES. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE SOFTWARE IS WITH YOU.
+
+## 7. LIMITATION OF LIABILITY
+
+IN NO EVENT SHALL OLIVER MOUGHTON OR SZYMON PROCAK BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES, INCLUDING BUT NOT LIMITED TO PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, LOSS OF USE, DATA, OR PROFITS, OR BUSINESS INTERRUPTION, HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OR LIMITATION OF LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL DAMAGES, SO THE ABOVE LIMITATION MAY NOT APPLY TO YOU.
+
+## 8. TERMINATION
+
+This Agreement is effective until terminated. The Licensors may terminate this Agreement at any time without notice if you fail to comply with any term or condition of this Agreement. Upon termination, you must immediately cease all use of the Software and destroy all copies, full or partial, of the Software in your possession or control. The provisions of this Agreement relating to confidentiality, intellectual property rights, warranties, limitations of liability, and indemnification shall survive any termination of this Agreement.
+
+## 9. INDEMNIFICATION
+
+You agree to indemnify, defend, and hold harmless Oliver Moughton and Szymon Procak, and their respective officers, directors, employees, agents, and representatives, from and against any and all claims, damages, losses, costs, and expenses (including reasonable attorneys' fees) arising out of or related to your use of the Software, your violation of this Agreement, or your violation of any rights of another party.
+
+## 10. GOVERNING LAW AND JURISDICTION
+
+This Agreement shall be governed by and construed in accordance with the laws of the United Kingdom, without regard to its conflict of law provisions. Any dispute arising out of or in connection with this Agreement shall be subject to the exclusive jurisdiction of the courts of the United Kingdom. You hereby consent to the personal jurisdiction of such courts and waive any objection to the venue of such courts.
+
+## 11. ENTIRE AGREEMENT
+
+This Agreement constitutes the entire agreement between the parties concerning the subject matter hereof and supersedes all prior or contemporaneous agreements, representations, warranties, and understandings, whether written or oral, relating to such subject matter. No amendment, modification, or waiver of any provision of this Agreement shall be effective unless in writing and signed by both Oliver Moughton and Szymon Procak.
+
+## 12. SEVERABILITY
+
+If any provision of this Agreement is held to be invalid, illegal, or unenforceable by a court of competent jurisdiction, the remaining provisions of this Agreement shall continue in full force and effect, and the invalid, illegal, or unenforceable provision shall be replaced by a valid, legal, and enforceable provision that most closely matches the intent of the original provision.
+
+## 13. NO WAIVER
+
+The failure of either party to enforce any right or provision of this Agreement shall not constitute a waiver of such right or provision unless acknowledged and agreed to in writing by such party. No waiver of any breach of this Agreement shall constitute a waiver of any other or subsequent breach.
+
+## 14. CONTACT INFORMATION
+
+For any inquiries regarding this License Agreement or to request permission for uses not covered herein, please contact:
+
+Oliver Moughton  
+Email: ols.moughton@outlook.com  
+Role: Product Owner and Co-Copyright Holder
+
+Szymon Procak  
+Email: SzyYP@proton.me  
+Role: Technical Lead and Co-Copyright Holder
+
+BY ACCESSING, DOWNLOADING, INSTALLING, COPYING, OR OTHERWISE USING THE SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT, UNDERSTAND IT, AND AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS.
+
+---
+
+MindForge Proprietary Software License  
+Version 1.0  
+Effective Date: January 2025  
+Last Modified: January 2025
