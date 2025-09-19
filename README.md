@@ -1,5 +1,11 @@
 # MindForge
 
+<img width="1024" height="1024" alt="Logo" src="https://github.com/user-attachments/assets/bf0f977c-4f21-428d-bef3-6daeddc227b0" />
+<img width="840" height="853" alt="image" src="https://github.com/user-attachments/assets/d4f24574-1c5b-4e81-ab62-19e283ba3428" />
+<img width="840" height="859" alt="image" src="https://github.com/user-attachments/assets/212ea595-67bd-443b-ad78-304d6c6a83c4" />
+
+
+
 A revolutionary mobile micro-learning application leveraging cognitive science principles to transform knowledge acquisition and retention through spaced repetition and active recall methodologies.
 
 ## Table of Contents
